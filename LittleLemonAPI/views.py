@@ -28,6 +28,19 @@ class ManagerView(generics.ListCreateAPIView):
         manager_group = Group.objects.get(name='Manager')
         current_user.groups.add(manager_group)
         return Response(status=status.HTTP_201_CREATED)
+    
+
+class SingleManagerView(generics.DestroyAPIView):
+
+    permission_classes = (IsAdminUser,)
+
+    def delete(self, request, pk):
+        current_user = get_object_or_404(User, pk = pk)
+        manager_group = Group.objects.get(name='Manager')
+        current_user.groups.remove(manager_group)
+        return Response(status=status.HTTP_200_OK)
+
+
 
 
     
