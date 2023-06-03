@@ -28,7 +28,7 @@ class ManagerView(generics.ListCreateAPIView):
         current_user = get_object_or_404(User, username = current_user)
         manager_group = Group.objects.get(name='Manager')
         current_user.groups.add(manager_group)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(data = {"message" : "user added to the manager group"}, status=status.HTTP_200_OK)
     
 
 class SingleManagerView(generics.DestroyAPIView):
@@ -39,7 +39,7 @@ class SingleManagerView(generics.DestroyAPIView):
         current_user = get_object_or_404(User, pk = pk)
         manager_group = Group.objects.get(name='Manager')
         current_user.groups.remove(manager_group)
-        return Response(status=status.HTTP_200_OK)
+        return Response(data = {"message" : "user deleted from the manager group"}, status=status.HTTP_200_OK)
     
 
 class CrewView(generics.ListCreateAPIView):
@@ -57,9 +57,9 @@ class CrewView(generics.ListCreateAPIView):
         current_user = self.request.POST.get("username")
         if not current_user: raise NotFound
         current_user = get_object_or_404(User, username = current_user)
-        manager_group = Group.objects.get(name='Delivery crew')
-        current_user.groups.add(manager_group)
-        return Response(status=status.HTTP_201_CREATED)
+        crew_group = Group.objects.get(name='Delivery crew')
+        current_user.groups.add(crew_group)
+        return Response(data = {"message" : "user added to the delivery crew group"}, status=status.HTTP_200_OK)
     
 
 class SingleCrewView(generics.DestroyAPIView):
@@ -68,9 +68,9 @@ class SingleCrewView(generics.DestroyAPIView):
 
     def delete(self, request, pk):
         current_user = get_object_or_404(User, pk = pk)
-        manager_group = Group.objects.get(name='Delivery crew')
-        current_user.groups.remove(manager_group)
-        return Response(status=status.HTTP_200_OK)
+        crew_group = Group.objects.get(name='Delivery crew')
+        current_user.groups.remove(crew_group)
+        return Response(data = {"message" : "user deleted from the delivery crew group"}, status=status.HTTP_200_OK)
 
 
 
