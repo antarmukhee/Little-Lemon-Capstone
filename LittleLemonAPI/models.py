@@ -1,10 +1,18 @@
+from typing import Iterable, Optional
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 class Category(models.Model):
     slug = models.SlugField()
-    title = models.CharField(max_length=255, db_index=True)
+    title = models.CharField(max_length=255, db_index=True, unique=True)
 
+    def __str__(self) -> str:
+        return self.title
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.slug = slugify(self.title)
+        super().save(force_insert, force_update, using, update_fields)
 
 class MenuItem(models.Model):
     title = models.CharField(max_length=255, db_index=True)

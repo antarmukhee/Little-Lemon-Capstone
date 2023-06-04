@@ -8,6 +8,8 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .permissions import IsManager
+from .models import Category
+from .serializers import CategorySerializer
 
 # Create your views here.
 
@@ -71,7 +73,13 @@ class SingleCrewView(generics.DestroyAPIView):
         crew_group = Group.objects.get(name='Delivery crew')
         current_user.groups.remove(crew_group)
         return Response(data = {"message" : "user deleted from the delivery crew group"}, status=status.HTTP_200_OK)
+    
 
+class CategoryView(generics.ListCreateAPIView):
+
+    permission_classes = (IsAdminUser,)
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 
