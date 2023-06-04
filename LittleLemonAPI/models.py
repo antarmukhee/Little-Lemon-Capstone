@@ -15,10 +15,13 @@ class Category(models.Model):
         super().save(force_insert, force_update, using, update_fields)
 
 class MenuItem(models.Model):
-    title = models.CharField(max_length=255, db_index=True)
+    title = models.CharField(max_length=255, db_index=True, unique=True)
     price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
     featured = models.BooleanField(db_index=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+    def __str__(self) -> str:
+        return self.title
 
 
 class Cart(models.Model):
