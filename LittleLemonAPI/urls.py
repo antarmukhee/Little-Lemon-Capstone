@@ -1,5 +1,5 @@
 from . import views
-from django.urls import path, include
+from django.urls import path
 
 urlpatterns = [
     path('groups/manager/users', views.ManagerView.as_view()),
@@ -9,5 +9,6 @@ urlpatterns = [
     path('categories', views.CategoryView.as_view()),
     path('menu-items', views.MenuItemView.as_view()),
     path('menu-items/<int:pk>', views.SingleMenuItemView.as_view()),
+    path('cart/menu-items', views.CartView.as_view()),
 
 ]

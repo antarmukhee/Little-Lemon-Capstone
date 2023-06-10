@@ -6,10 +6,10 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .permissions import IsManager, IsAuthenticatedAndReadOnly
-from .models import Category, MenuItem
-from .serializers import CategorySerializer, MenuItemSerializer
+from .models import Category, MenuItem, Cart
+from .serializers import CategorySerializer, MenuItemSerializer, CartSerializer
 
 # Create your views here.
 
@@ -94,6 +94,18 @@ class SingleMenuItemView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsManager|IsAdminUser|IsAuthenticatedAndReadOnly,)
     queryset = MenuItem.objects.select_related('category').all()
     serializer_class = MenuItemSerializer
+
+
+class CartView(generics.ListCreateAPIView, generics.DestroyAPIView):
+    
+    permission_classes = (IsAuthenticated,)
+    def get_queryset(self):
+        return Cart.objects.filter(self.request.user)
+    serializer_class = CartSerializer
+
+    
+
+
 
 
 
