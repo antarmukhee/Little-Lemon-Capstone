@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Category, MenuItem, Order, OrderItem, Cart
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import NotFound
+from datetime import date
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,24 +42,41 @@ class CartSerializer(serializers.ModelSerializer):
         attrs['customer_id'] = self.context['request'].user.id
         return attrs
     
-
 class OrderItemSerializer(serializers.ModelSerializer):
-    menuitem = MenuItemSerializer(read_only = True)
-    menuitem_id = serializers.IntegerField(write_only = True)
+    menuitem = MenuItemSerializer()
     class Meta:
         model = OrderItem
-        fields = ('id', 'menuitem', 'menuitem_id', 'quantity', 'unit_price', 'price')
+        fields = ('id', 'menuitem', 'quantity', 'unit_price', 'price')
+        read_only_fields = ('id', 'menuitem', 'quantity', 'unit_price', 'price')
 
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = UserSerializer(read_only = True)
-    customer_id = serializers.IntegerField(write_only = True)
     delivery_crew = UserSerializer(read_only = True)
-    delivery_crew_id = serializers.IntegerField(write_only = True)
     orderitems = OrderItemSerializer(read_only=True, many=True)
     class Meta:
         model = Order
-        fields = ('id', 'customer', 'customer_id', 'delivery_crew', 'delivery_crew_id', 'status', 'total', 'date', 'orderitems')
+        fields = ('id', 'customer', 'delivery_crew', 'status', 'total', 'date', 'orderitems')
+        read_only_fields = ('total', 'date')
+    def validate(self, attrs):
+        customer = self.context['request'].user
+        cart_items = Cart.objects.filter(customer=customer)
+        if not cart_items: raise NotFound
+        attrs['customer_id'] = customer.id
+        attrs['date'] = date.today()
+        attrs['total'] = sum([item.price for item in cart_items])
+        return attrs
+        
+        
+
+
+
+
+        
+
+
+
+        
 
 
 

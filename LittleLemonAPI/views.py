@@ -6,10 +6,10 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .permissions import IsManager, IsCustomer, IsAuthenticatedAndReadOnly
-from .models import Category, MenuItem, Cart
-from .serializers import CategorySerializer, MenuItemSerializer, CartSerializer
+from .models import Category, MenuItem, Cart, Order, OrderItem
+from .serializers import CategorySerializer, MenuItemSerializer, CartSerializer, OrderSerializer
 
 # Create your views here.
 
@@ -108,6 +108,44 @@ class CartView(generics.ListCreateAPIView, generics.DestroyAPIView):
         for item in cart_items:
             item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class OrderView(generics.ListCreateAPIView):
+
+    permission_classes = (IsAuthenticated,)
+    def get_queryset(self):
+        user = self.request.user
+        if user.groups.filter(name = 'Manager'): return Order.objects.all()
+        elif user.groups.filter(name = 'Delivery crew'): return Order.objects.filter(delivery_crew=user)
+        else: return Order.objects.filter(customer=user)
+    serializer_class = OrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        order_id = serializer.data.get('id')
+        cart_items = Cart.objects.filter(customer=request.user)
+        for item in cart_items:
+            OrderItem(
+                order_id=order_id,
+                menuitem=item.menuitem,
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                price=item.price,
+            ).save()
+            item.delete()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    
+
+
+
+        
+
 
     
 
