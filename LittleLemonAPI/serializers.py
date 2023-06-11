@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Category, MenuItem, Order, OrderItem, Cart
+from django.shortcuts import get_object_or_404
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,16 +27,19 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     customer = UserSerializer(read_only = True)
-    customer_id = serializers.SerializerMethodField(method_name='get_user_id')
     menuitem = MenuItemSerializer(read_only = True)
     menuitem_id = serializers.IntegerField(write_only = True)
     class Meta:
         model = Cart
-        fields = ('id', 'customer', 'customer_id', 'menuitem', 'menuitem_id', 'qunatity', 'unit_price', 'price')
-    def get_user_id(self):
-        return self.request.user.id
-
-
+        fields = ('id', 'customer', 'menuitem', 'menuitem_id', 'quantity', 'unit_price', 'price')
+        read_only_fields = ('unit_price', 'price')
+    def validate(self, attrs):
+        menu_item = get_object_or_404(MenuItem, pk=attrs['menuitem_id'])
+        attrs['unit_price'] = menu_item.price
+        attrs['price'] = attrs['quantity'] * attrs['unit_price']
+        attrs['customer_id'] = self.context['request'].user.id
+        return attrs
+    
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menuitem = MenuItemSerializer(read_only = True)

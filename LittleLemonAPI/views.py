@@ -98,10 +98,16 @@ class SingleMenuItemView(generics.RetrieveUpdateDestroyAPIView):
 
 class CartView(generics.ListCreateAPIView, generics.DestroyAPIView):
     
-    permission_classes = (IsCustomer,)
+    permission_classes = (IsCustomer|IsAdminUser,)
     def get_queryset(self):
-        return Cart.objects.filter(self.request.user)
+        return Cart.objects.filter(customer = self.request.user)
     serializer_class = CartSerializer
+
+    def delete(self, request, *args, **kwargs):
+        cart_items = Cart.objects.filter(customer = request.user)
+        for item in cart_items:
+            item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     
 

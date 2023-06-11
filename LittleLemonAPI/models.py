@@ -25,14 +25,17 @@ class MenuItem(models.Model):
 
 
 class Cart(models.Model):
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
-    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
+    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name="carts")
     quantity = models.SmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     price = models.DecimalField(max_digits=6, decimal_places=2)
 
     class Meta:
         unique_together = ('menuitem', 'customer')
+    
+    def __str__(self) -> str:
+        return self.menuitem.title + " in " + self.customer.username + "'s cart" 
 
 
 class Order(models.Model):
